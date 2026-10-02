@@ -11,6 +11,7 @@
 !.gitignore
 !README.md
 !pyproject.toml
+!LICENSE
 
 # Allow source code
 !src/py_pdf_tender_rag/*.py
