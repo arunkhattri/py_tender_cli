@@ -68,3 +68,62 @@ natural-language/semantic layer if actually needed
 + section_tables.py
 + make_list.py
 + boq.py
+* Final Conceptual Model
+** MAKE LIST
++ Reference/master list of permitted or recognized makes for material/product categories.
++ It does NOT indicate that the material is required in a particular project.
+** SOQ / BOQ
++ Project-specific list of materials/items actually required by the tender.
++ A material appearing in the Make List does not imply that it is required in the project.
+** SOQ MAKES
++ Makes explicitly specified against particular SOQ/BOQ items.
++ These are project-specific specifications and do not modify the Make List.
+* DataFrame Contracts
+** make-list
++ source_document
++ section
++ item_no
++ material
++ make
++ remarks
++ source_page
+** BOQ
++ tender_id
++ section
++ item_no
++ parent_item_no
++ description
++ unit
++ quantity
++ rate
++ amount
++ remarks
++ source_page
+** SOQ make
++ tender_id
++ boq_item_no
++ make
++ make_type
++ context
++ source_page
+** Relationship between them
+#+begin_example
+                    MAKE LIST
+                        │
+                        │ reference
+                        ▼
+                 permitted makes
+                        │
+                        │
+                        │
+TENDER ─────────────── SOQ
+                        │
+                        ├── BOQ item
+                        │      │
+                        │      └── explicit make?
+                        │              │
+                        │              ▼
+                        │          SOQ makes
+                        │
+                        └── quantity/unit/etc.
+#+end_example

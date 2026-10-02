@@ -1,0 +1,203 @@
+#+title: Tender cli application
+* Objective
+Build a CLI application for tender PDFs.
+
+The application is concerned only with two parts of a tender:
+
+1. Make List / Approved Makes
+2. BOQ / SOQ (Schedule of Quantities)
+
+Everything else in the tender is out of scope for now.
+The eventual user workflow should be:
+#+begin_notes
+tender.pdf
+    │
+    ▼
+ tender ingest
+    │
+    ├── Make List ──► DataFrame
+    │
+    └── BOQ/SOQ ───► DataFrame
+                         │
+                         ▼
+                    local dataset
+                         │
+                         ▼
+                   tender query
+                         │
+                         ▼
+                       answer
+#+end_notes
+* Domain Model
+** Make List
+
+The Make List is a reference/master-type dataset. It describes makes that are
+permitted, approved, preferred, or otherwise recognized for a material/product
+category.
+
+A Make List entry does *not* imply that the material/product is required in a
+particular tender. Not every product in the Make List is required by every
+project.
+
+The target DataFrame is =~make_list=~:
+
+| Column          | Meaning                                      |
+|-----------------+----------------------------------------------|
+| source_document | Document from which the make list was taken  |
+| section         | Make-list section/category                   |
+| item_no         | Source item number, when present             |
+| material        | Material/product category                    |
+| make            | One make/brand/manufacturer per row          |
+| remarks         | Additional source qualification              |
+| source_page     | PDF page containing the record               |
+
+One material with several makes is represented by several rows.
+
+** BOQ / SOQ
+
+The BOQ/SOQ is project-specific. It answers the question:
+
+#+begin_quote
+What materials/items are actually required by this tender?
+#+end_quote
+
+The target DataFrame is =~boq=~:
+
+| Column          | Meaning                                      |
+|-----------------+----------------------------------------------|
+| tender_id       | Identifier for the project/tender            |
+| section         | BOQ/SOQ section/category                     |
+| item_no         | BOQ/SOQ item number                          |
+| parent_item_no  | Parent item for hierarchical SOQ items       |
+| description     | Original tender item description             |
+| unit            | Unit of measurement                          |
+| quantity        | Tender quantity                              |
+| rate            | Rate, when present                           |
+| amount          | Amount, when present                         |
+| remarks         | Additional source information                |
+| source_page     | PDF page containing the record               |
+
+** SOQ-specific makes
+
+A make may be explicitly specified in the SOQ for a particular item. This is
+project-specific information and must not be used to modify the Make List.
+
+Because the SOQ is the source of this information, the related DataFrame is
+called =~soq_makes=~ rather than =~boq_makes=~.
+
+The target DataFrame is:
+
+| Column        | Meaning                                      |
+|---------------+----------------------------------------------|
+| tender_id     | Identifier for the project/tender            |
+| boq_item_no   | BOQ/SOQ item to which the make applies       |
+| make          | Explicitly named make/manufacturer/OEM       |
+| make_type     | Context, e.g. material_make or oem_fabricator|
+| context       | Source wording/context for the extracted name|
+| source_page   | PDF page containing the record               |
+
+A company name appearing in an SOQ is not automatically a material make. Its
+context must be preserved. For example, a material manufacturer and an
+authorized OEM/fabricator are distinct concepts.
+
+* Relationship Between Make List and SOQ
+
+The three datasets have different meanings:
+
+#+begin_notes
+                    MAKE LIST
+                        │
+                        │ reference/master
+                        ▼
+                 permitted universe
+
+TENDER ─────────────── SOQ / BOQ
+                           │
+                           ├── actual project requirements
+                           │       │
+                           │       ▼
+                           │      boq
+                           │
+                           └── explicit makes, if specified
+                                   │
+                                   ▼
+                               soq_makes
+#+end_notes
+
+The Make List and SOQ must not be merged.
+
+If a material occurs in the Make List but not in the SOQ, that does *not* mean
+the tender requires that material.
+
+If the SOQ explicitly specifies makes for an item, those makes are project-
+specific specifications for that item. They do not change the Make List.
+
+If the SOQ does not specify a make, the Make List may be used as reference
+information, but its entries must not be presented as makes explicitly
+specified by the SOQ.
+
+* Representative CLI Questions
+** Make List
+
+- What makes are listed for MDF?
+- Show the complete Make List.
+- Which materials have E3 as a listed make?
+
+** BOQ / SOQ
+
+- What items in this tender require MDF?
+- How much MDF is required?
+- Show all SOQ items measured in sqm.
+
+** SOQ-specific makes
+
+- What makes are explicitly specified for BOQ item 91?
+- Does this SOQ specify a make for MDF?
+
+** Combined query
+
+- For the MDF required in this tender, what makes are in the Make List and
+  which, if any, are explicitly specified in the SOQ?
+
+The combined query compares the datasets. It does not alter either dataset.
+
+* Starting Point
+01. Define Make List DataFrame schema
+02. Define BOQ/SOQ DataFrame schema
+03. Define representative questions the CLI must answer
+04. Freeze that as the project specification
+05. Create the new Git repo/project skeleton
+06. Bring over only the useful extraction code
+07. Test extraction → DataFrames
+08. Add save/load dataset
+09. Build CLI ingest
+10. Build CLI query
+11. Add semantic/LLM assistance only if actually necessary
+* Fundamental Rule
+Structured data first. RAG/LLM only where structured querying isn't enough.
+* Development Approach
+#+begin_notes
+PDF
+ ↓
+table extraction
+ ↓
+Make List / BOQ identification
+ ↓
+DataFrames
+ ↓
+save/load dataset
+ ↓
+CLI ingestion
+ ↓
+CLI querying
+ ↓
+natural-language/semantic layer if actually needed
+#+end_notes
+* Useful components from the previous experiment
++ models.py
++ pdf_tables.py
++ table_grouping.py
++ section_locator.py
++ section_tables.py
++ make_list.py
++ boq.py

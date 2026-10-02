@@ -14,7 +14,7 @@
 !LICENSE
 
 # Allow source code
-!src/py_pdf_tender_rag/*.py
+!src/py_tender_cli/*.py
 
 # Allow tests
 !tests/*.py
