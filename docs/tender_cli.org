@@ -1,0 +1,70 @@
+#+title: Tender cli application
+* Objective
+Build a CLI application for tender PDFs.
+
+The application is concerned only with two parts of a tender:
+
+1. Make List / Approved Makes
+2. BOQ / SOQ (Schedule of Quantities)
+
+Everything else in the tender is out of scope for now.
+The eventual user workflow should be:
+#+begin_notes
+tender.pdf
+    │
+    ▼
+ tender ingest
+    │
+    ├── Make List ──► DataFrame
+    │
+    └── BOQ/SOQ ───► DataFrame
+                         │
+                         ▼
+                    local dataset
+                         │
+                         ▼
+                   tender query
+                         │
+                         ▼
+                       answer
+#+end_notes
+* Starting Point
+01. Define Make List DataFrame schema
+02. Define BOQ/SOQ DataFrame schema
+03. Define representative questions the CLI must answer
+04. Freeze that as the project specification
+05. Create the new Git repo/project skeleton
+06. Bring over only the useful extraction code
+07. Test extraction → DataFrames
+08. Add save/load dataset
+09. Build CLI ingest
+10. Build CLI query
+11. Add semantic/LLM assistance only if actually necessary
+* Fundamental Rule
+Structured data first. RAG/LLM only where structured querying isn't enough.
+* Development Approach
+#+begin_notes
+PDF
+ ↓
+table extraction
+ ↓
+Make List / BOQ identification
+ ↓
+DataFrames
+ ↓
+save/load dataset
+ ↓
+CLI ingestion
+ ↓
+CLI querying
+ ↓
+natural-language/semantic layer if actually needed
+#+end_notes
+* Useful components from the previous experiment
++ models.py
++ pdf_tables.py
++ table_grouping.py
++ section_locator.py
++ section_tables.py
++ make_list.py
++ boq.py

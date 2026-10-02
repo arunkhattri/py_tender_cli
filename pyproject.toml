@@ -1,0 +1,28 @@
+[project]
+name = "py-tender-cli"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Arun Khattri", email = "arunkhattri@outlook.com" }
+]
+requires-python = ">=3.14.7"
+dependencies = [
+    "numpy>=2.5.3",
+    "pandas>=3.0.6",
+    "pyarrow>=25.0.1",
+    "pymupdf>=1.28.2",
+]
+
+[project.scripts]
+py-tender-cli = "py_tender_cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipython>=9.17.1",
+    "pytest>=9.1.1",
+]

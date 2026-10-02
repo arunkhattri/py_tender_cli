@@ -1,0 +1,21 @@
+# Ignore everything
+*
+
+# Allow directories
+!*/
+
+# Allow org files
+!*.org
+
+# Allow project files
+!.gitignore
+!README.md
+!pyproject.toml
+
+# Allow source code
+!src/py_pdf_tender_rag/*.py
+
+# Allow tests
+!tests/*.py
+# Allow scripts for diagnostic tests
+!scripts/*.py
